@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.CreUserWarningMapper">
+
+	<select id="getCreUserWarning" parameterType="HashMap" resultType="main.java.cn.domain.CreUserWarningDomain">
+		select cre_user_id creUserId,product_name productName,warning_count warningCount,inform_mobiles informMobiles
+       			,inform_nums informNums,createBy,createTime,lastRepair,lastTime
+		from cre_user_warning 
+		where flag = 1 and cre_user_id = #{userId} and product_name = #{productName}
+		limit 0,1
+	</select>
+	
+	<select id="getCreUserWarningList" parameterType="HashMap" resultType="main.java.cn.domain.CreUserWarningDomain">
+		select cre_user_id creUserId,product_name productName,warning_count warningCount,inform_mobiles informMobiles
+       			,inform_nums informNums,createBy,createTime,lastRepair,lastTime
+		from cre_user_warning 
+		where flag = 1
+	</select>
+
+	<update id="updateCreUserWarning" parameterType="HashMap">
+		UPDATE cre_user_warning
+		<trim prefix="set" suffixOverrides=",">
+			<if test="warningCount != null">
+				warning_count = #{warningCount},
+			</if>
+			<if test="informMobiles != null">
+				inform_mobiles = #{informMobiles},
+			</if>
+			<if test="informNums != null">
+				inform_nums = #{informNums},
+			</if>
+			lastRepair = #{userId},lastTime = now()
+		</trim>
+		WHERE flag = 1 and cre_user_id = #{userId} and product_name = #{productName}
+	</update>
+
+	<insert id="saveCreUserWarning" parameterType="HashMap">
+		INSERT INTO cre_user_warning
+			(cre_user_id,product_name,warning_count,inform_mobiles,inform_nums,flag,createBy,createTime,lastRepair,lastTime)
+		values
+		    (#{userId},#{productName},#{warningCount},#{informMobiles},0,1,#{userId},now(),#{userId},now())	
+	</insert>
+</mapper>

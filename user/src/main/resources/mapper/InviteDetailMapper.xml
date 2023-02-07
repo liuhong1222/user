@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.InviteDetailMapper">
+
+	<select id="getInviteDetailByMobile" resultType="main.java.cn.domain.InviteDetailDomain" parameterType="string">
+		select id,cre_user_id creUserId,mobile,invite_type inviteType
+		       ,userName,orderNo,freeCount,flag,createtime,updatetime
+		from invite_detail
+		where mobile = #{mobile} and flag = 1
+		limit 0,1
+	</select>
+	
+	<insert id="saveInviteDetail" parameterType="main.java.cn.domain.InviteDetailDomain">
+		INSERT INTO invite_detail
+		  (cre_user_id,mobile,invite_type,userName,orderNo,freeCount,flag,createtime,updatetime)
+		values
+		  (#{creUserId},#{mobile},#{inviteType},#{userName},#{orderNo},#{freeCount},#{flag},#{createtime}, #{updatetime})		
+	</insert>
+	
+	<update id="updateInviteDetail" parameterType="main.java.cn.domain.InviteDetailDomain">
+		update invite_detail
+		set orderNo = #{orderNo},updatetime = now(),freeCount = #{freeCount}
+		where id = #{id} and flag = 1
+	</update>
+	
+	<select id="getInviteList" resultType="HashMap" parameterType="string">
+		select i.mobile,i.userName,CASE when i.invite_type = 1 then '方式一'
+		                                when i.invite_type = 2 then '方式二' else '方式三' end inviteType,
+		       '已充值' inviteStatus,t.number,i.freeCount
+		from invite_detail i
+		INNER JOIN trd_order t on t.order_no = i.orderNo and t.`status` = 1 and t.delete_status = '0'
+		where i.cre_user_id = #{creUserId} and i.flag = 1
+		ORDER BY i.createtime
+	</select>
+</mapper>

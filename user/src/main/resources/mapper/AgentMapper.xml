@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.AgentMapper"> 
+	
+	<select id="getAgentIdByDomain" parameterType="string" resultType="main.java.cn.domain.AgentWebSiteDomain">
+		select oad.agent_id agentId, oad.`name` domain,oaw.sms_sign smsSign
+		from o_agent_domain oad
+		INNER JOIN o_agent oa on oa.id = oad.agent_id and oa.delete_flag = 1
+		INNER JOIN o_agent_website oaw on oaw.agent_id = oad.agent_id 
+		where oad.`name` = #{domain}
+		limit 0,1
+	</select>
+	
+	<select id="getAgentInfoByCreUserId" parameterType="string" resultType="main.java.cn.domain.AgentWebSiteDomain">
+		select oad.agent_id agentId, oad.`name` domain,oaw.sms_sign smsSign
+		from o_agent_cre_user oacu
+		INNER JOIN o_agent oa on oa.id = oacu.agent_id and oa.delete_flag = 1
+		INNER JOIN o_agent_domain oad on oad.agent_id = oacu.agent_id
+		INNER JOIN o_agent_website oaw on oaw.agent_id = oad.agent_id 
+		where oacu.cre_user_id = #{creUserId}
+		limit 0,1
+	</select>
+	
+	<select id="getAgentCreUser" parameterType="string" resultType="cn.entity.AgentCreUser">
+		select oacu.id,oacu.agent_id agentId,oacu.cre_user_id creUserId,oacu.create_time createTime,oacu.update_time updateTime
+		from o_agent_cre_user oacu
+		INNER JOIN o_agent oa on oa.id = oacu.agent_id and oa.delete_flag = 1
+		where oacu.cre_user_id = #{creUserId} 
+		limit 0,1
+	</select>
+	
+	<insert id="saveAgentCreUser" parameterType="main.java.cn.domain.AgentCreUserDomain">
+		insert into o_agent_cre_user(agent_id,cre_user_id,create_time,update_time)
+		values(#{agentId},#{creUserId} ,#{createTime} ,#{updateTime})
+	</insert>
+	
+	<select id="getAgentContractInfos" parameterType="string" resultType="HashMap">
+		select oac.company_name companyName,oac.company_address companyAddress,oac.account_no accountNo
+		       ,oac.bank_name bankName,oac.postcode,oac.mobile,
+		       oac.sign_url signPath,oac.seal_url sealPath,oa.short_name shortName,oad.name domainName
+		from o_agent_cre_user oacu
+		inner join o_agent oa on oa.id = oacu.agent_id and oa.delete_flag = 1
+		inner join o_agent_domain oad on oad.agent_id = oacu.agent_id
+		INNER JOIN o_agent_contract oac on oac.agent_id = oacu.agent_id
+		where oacu.cre_user_id = #{creUserId} 
+		limit 0,1
+	</select>
+	
+	<select id="getAgentAlipayInfos" parameterType="string" resultType="cn.entity.AgentAlipayInfo">
+		select  oaa.call_url alipayPayurl, oaa.appid alipayAppid, oaa.private_key alipayPrivatekey
+       			, oaa.public_key alipayPublickey, oaa.callback_url alipayCallbackurl
+		from o_agent_alipay oaa
+		INNER JOIN o_agent oa on oa.id = oaa.agent_id and oa.delete_flag = 1
+		where  oaa.agent_id = #{agentId} 
+	</select>
+	
+	<insert id="saveAgentTrdOrder" parameterType="HashMap">
+	    insert into o_agent_trd_order_id(trd_order_id,agent_id,create_time)
+	    values(#{trdOrderId},#{agentId},now())
+	</insert>
+	
+	<select id="getAgentPackage" parameterType="HashMap" resultType="HashMap">
+		select oap.number,oap.money,oap.order_code orderCode,oap.package_name packageName
+		from o_agent_package  oap
+		INNER JOIN o_agent oa on oa.id = oap.agent_id and oa.delete_flag = 1
+		where oap.agent_id = #{agentId} and oap.package_id = #{productId} and oap.is_deleted = 0
+	</select>
+	
+	<select id="getWebSiteInfo" parameterType="string" resultType="main.java.cn.domain.WebSiteInfoDomain">
+		select oaw.logo_url logoUrl,oaw.icon_url iconUrl, oad.address,oa.company_name companyName,
+       		   oad.licence,oad.copyright,oad.icp_record icpRecord,oad.police_record policeRecord,
+       		   oacs.hotline ,oacs.qq,oacs.biz_no bizNo,oacs.meiqia_entid  customerID,oacs.meiqia_status customerStatus,oad.contact_info contactInfo
+		from o_agent_domain oad
+		inner join o_agent oa on oa.id = oad.agent_id and oa.delete_flag = 1
+		INNER JOIN o_agent_website oaw on oaw.agent_id = oad.agent_id 
+		inner join o_agent_cust_service oacs on oacs.agent_id  = oad.agent_id
+		where oad.agent_id = #{agentId} 
+	</select>
+	
+	<select id="getAgentPayInfo" parameterType="string" resultType="long">
+		select count(1) nums
+		from o_agent_alipay oaa
+		inner join o_agent oa on oa.id = oaa.agent_id and oa.delete_flag = 1
+		where oaa.agent_id = #{agentId} and oaa.appid is not null and oaa.appid != ''
+		and oaa.call_url is not null and oaa.call_url != ''
+		and oaa.callback_url is not null and oaa.callback_url != ''
+		and oaa.public_key is not null and oaa.public_key != ''
+		and oaa.private_key is not null and oaa.private_key != ''
+	</select>
+	
+	<select id="getAgentAccountByAgentId"  parameterType="string" resultType="cn.entity.AgentAccount">
+		select oaa.id,oaa.agent_id agentId,oaa.empty_balance balance,oaa.empty_warn_number warnNumber
+		       ,oaa.empty_credit_number creditNumber,oaa.version,
+		       oaa.create_time createTime,oaa.update_time  updateTime
+		from o_agent_account oaa
+		inner join o_agent oa on oa.id = oaa.agent_id and oa.delete_flag = 1
+		where oaa.agent_id = #{agentId}
+		limit 0,1
+	</select>
+	
+	<update id="updateAgentAccountByAgentId" parameterType="HashMap" >
+		UPDATE o_agent_account
+		SET empty_balance = empty_balance - #{number} ,version = version + 1 ,update_time = now()
+		where agent_id = #{agentId} and version = #{version}
+	</update>
+	
+	<insert id="saveAgentOrder" parameterType="cn.entity.AgentOrder">
+		INSERT into o_agent_order
+		    (agent_id,product_id,order_no,trade_no,type,price,number,money,pay_type,
+			  pay_time,status,remark,role_type,version,create_time,update_time)
+		values
+		    (#{agentId},#{productId},#{orderNo},#{tradeNo},#{type},#{price},#{number},
+			  #{money},#{payType},#{payTime},#{status},#{remark},#{roleType},#{version},now(),now())
+	</insert>
+	
+	<select id="getAgentBalanceByAgentId"  parameterType="string" resultType="string">
+		select oaa.empty_balance balance 
+		from o_agent_cre_user oacu
+		inner join o_agent oa on oa.id = oacu.agent_id and oa.delete_flag = 1
+		INNER JOIN o_agent_account oaa on oaa.agent_id = oacu.agent_id 
+		where oacu.cre_user_id = #{creUserId}
+		limit 0,1
+	</select>
+	
+	<insert id="saveAgentApplyInfo" parameterType="main.java.cn.domain.AgentApplyInfoDomain">
+		insert into o_agent_apply(companyName,person,phone,mail,position,status,createTime,updateTime)
+		values(#{companyName},#{person},#{phone},#{mail},#{position},#{status},#{createTime},#{updateTime})
+	</insert>
+	
+	<update id="updateAgentCreUserByAgentId">
+		update o_agent_cre_user
+		set agent_id = #{agentId},update_time = now()
+		where cre_user_id = #{creUserId}
+	</update>
+	
+	<insert id="saveAgentChange" parameterType="HashMap">
+		insert into o_user_agent_change(mobile,creUserId,out_agent_id,in_agent_id,create_time,register_time)
+		values(#{mobile},#{creUserId},#{outAgentId},#{inAgentId},now(),now())
+	</insert>
+</mapper>

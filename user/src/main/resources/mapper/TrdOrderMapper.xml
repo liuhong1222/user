@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.TrdOrderMapper">
+
+	<!-- 配置resultMap属性，进行表字段与实体类属性映射 -->
+	<resultMap id="BaseResultMap" type="cn.entity.TrdOrder">
+		<result column="id" property="id"></result>
+		<result column="cre_user_id" property="creUserId"></result>
+		<result column="order_no" property="orderNo"></result>
+		<result column="trade_no" property="tradeNo"></result>
+		<result column="cl_order_no" property="clOrderNo"></result>
+		<result column="products_id" property="productsId"></result>
+		<result column="number" property="number"></result>
+		<result column="money" property="money"></result>
+		<result column="pay_type" property="payType"></result>
+		<result column="pay_time" property="payTime"></result>
+		<result column="type" property="type"></result>
+		<result column="status" property="status"></result>
+		<result column="delete_status" property="deleteStatus"></result>
+		<result column="version" property="version"></result>
+		<result column="create_time" property="createTime"></result>
+		<result column="update_time" property="updateTime"></result>
+	</resultMap>
+
+	<select id="findByOrderNo" resultMap="BaseResultMap"
+		parameterType="HashMap">
+		SELECT * FROM trd_order WHERE ORDER_NO = #{orderNo} AND
+		DELETE_STATUS = '0'
+	</select>
+
+	<select id="findByClOrderNo" resultMap="BaseResultMap"
+		parameterType="HashMap">
+		SELECT * FROM trd_order WHERE CL_ORDER_NO = #{clOrderNo}
+		AND DELETE_STATUS = '0'
+	</select>
+
+	<select id="findByCreUserId" resultMap="BaseResultMap"
+		parameterType="HashMap">
+		SELECT * FROM trd_order WHERE CRE_USER_ID = #{creUserId}
+		AND DELETE_STATUS = '0' AND STATUS = '1' ORDER BY ID DESC
+	</select>
+
+
+	<update id="updateTrdOrder" parameterType="cn.entity.TrdOrder">
+		UPDATE trd_order
+		<trim prefix="set" suffixOverrides=",">
+			<if test="creUserId != null">
+				CRE_USER_ID = #{creUserId},
+			</if>
+			<if test="orderNo != null">
+				ORDER_NO = #{orderNo},
+			</if>
+			<if test="tradeNo != null">
+				TRADE_NO = #{tradeNo},
+			</if>
+			<if test="clOrderNo != null">
+				CL_ORDER_NO = #{clOrderNo},
+			</if>
+			<if test="productsId != null">
+				PRODUCTS_ID = #{productsId},
+			</if>
+			<if test="number != null">
+				NUMBER = #{number},
+			</if>
+			<if test="money != null">
+				MONEY = #{money},
+			</if>
+			<if test="payType != null">
+				PAY_TYPE = #{payType},
+			</if>
+			<if test="payTime != null">
+				PAY_TIME = #{payTime},
+			</if>
+			<if test="type != null">
+				type = #{type},
+			</if>
+			<if test="status != null">
+				STATUS = #{status},
+			</if>
+			<if test="deleteStatus != null">
+				DELETE_STATUS = #{deleteStatus},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime},
+			</if>
+			version = version + 1
+		</trim>
+		WHERE ID=#{id} and VERSION = #{version}
+	</update>
+
+	<insert id="saveTrdOrder" keyProperty="id" useGeneratedKeys="true" parameterType="cn.entity.TrdOrder">
+		INSERT INTO trd_order(
+		CRE_USER_ID,
+		createDate,
+		ORDER_NO,
+		TRADE_NO,
+		CL_ORDER_NO,
+		PRODUCTS_ID,
+		NUMBER,
+		MONEY,
+		PAY_TYPE,
+		PAY_TIME,
+		TYPE,
+		STATUS,
+		DELETE_STATUS,
+		VERSION,
+		createBy,
+		CREATE_TIME,
+		UPDATE_TIME)
+		VALUES (
+		#{creUserId},
+		CURDATE(),
+		#{orderNo},
+		#{tradeNo},
+		#{clOrderNo},
+		#{productsId},
+		#{number},
+		#{money},
+		#{payType},
+		#{payTime},
+		#{type},
+		#{status},
+		'0',
+		0,
+		8,
+		#{createTime},
+		#{updateTime}
+		)
+	</insert>
+
+
+	<select id="pageFindTrdOrderByCreUserId" resultType="HashMap" parameterType="HashMap">
+		SELECT c.contractNo,c.fileUrl contractUrl,t.id,
+		       t.cre_user_id creUserId,t.order_no orderNo,t.trade_no tradeNo,
+		       t.cl_order_no clOrderNo,t.products_id productsId,t.number,t.money,
+		        t.pay_type payType,t.pay_time payTime,t.type,t.`status`,t.delete_status deleteStatus,
+		       t.version,t.create_time createTime,t.update_time updateTime
+		FROM trd_order t
+		LEFT JOIN contract c on c.orderNo = t.order_no and c.flag = 1 and c.`status` = 1
+		WHERE t.CRE_USER_ID=#{creUserId} AND t.DELETE_STATUS = '0' AND t.STATUS = '1' 
+		ORDER BY t.ID DESC
+		LIMIT #{currentPage},#{numPerPage}
+	</select>
+
+	<select id="quertCountTrdOrder" resultType="Integer"
+		parameterType="Integer">
+		SELECT count(id) FROM trd_order
+		WHERE CRE_USER_ID=#{creUserId}
+		AND DELETE_STATUS = '0' AND STATUS = '1' ORDER BY ID DESC
+	</select>
+	
+	
+	<select id="getSumMoney" resultType="BigDecimal" parameterType="Integer">
+		SELECT SUM(MONEY) FROM trd_order
+		WHERE CRE_USER_ID=#{creUserId}
+		AND DELETE_STATUS = '0' AND STATUS = '1' 
+	</select>
+	
+	<select id="quertCountTrdOrderByProductsId" resultType="BigDecimal" parameterType="HashMap">
+		SELECT COALESCE(SUM(NUMBER),0) FROM trd_order
+		WHERE CRE_USER_ID=#{0}
+		AND DELETE_STATUS = '0' AND STATUS = '1' AND PRODUCTS_ID IN (#{1})
+	</select>
+	
+	<select id="getPayPackage" resultType="main.java.cn.domain.PackageDomain" parameterType="string">
+		select oap.package_id packageId,oap.package_name packageName,oap.number
+		       ,oap.money,oap.order_code orderCode,oap.discout,oap.original_cost originalCost
+		from o_agent_cre_user oacu
+		INNER JOIN o_agent_package oap on oap.agent_id = oacu.agent_id and oap.product_id = #{productId}
+		where oacu.cre_user_id = #{creUserId}
+	</select>
+	
+	<select id="getSummyOrderList" resultType="HashMap" parameterType="HashMap">
+		select DATE_FORMAT(t.create_time,'%Y-%m-%d') days,SUM(if(t.type=1,t.money,-t.money)) money
+		from trd_order t
+		<![CDATA[INNER JOIN o_agent_cre_user o on o.cre_user_id = t.cre_user_id and o.agent_id <=3
+		where t.status = 1 and t.delete_status = '0' and t.type=1
+		and t.create_time >=#{startDate} and t.create_time <DATE_ADD(#{endDate},INTERVAL 1 day)
+		GROUP BY DATE_FORMAT(t.create_time,'%Y-%m-%d')]]>
+	</select>
+	
+	<select id="getUserIsPresent" resultType="Integer" parameterType="string">
+		select count(1) from trd_order 
+		where cre_user_id = #{creUserId} and `status` = 1 
+		and delete_status = 0 and pay_type = 10
+	</select>
+</mapper>

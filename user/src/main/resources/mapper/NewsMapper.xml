@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.NewsMapper"> 
+	
+	<select id="getNewsById" parameterType="string" resultType="HashMap">
+		select * 
+		from news
+		where id = #{news_id} and flag = 1
+		limit 0,1
+	</select>
+	
+	<select id="getAboutMeContent" parameterType="string" resultType="HashMap">
+		SELECT n.* 
+		from news n 
+		INNER JOIN o_agent_domain o on o.agent_id = n.agent_id and o.`name` = #{domain}
+		where n.flag = 1 and n.title = '关于我们'
+		limit 0,1
+	</select>
+	
+	<select id="newsList"  parameterType="HashMap" resultType="HashMap">
+		select n.id,n.cre_user_id userId,DATE_FORMAT(n.createdate,'%Y-%m') months,substr(n.createdate,9,2) days,
+				n.title,n.newsContent premessage,n.message,n.createby,n.createtime,n.lastrepair,n.lasttime
+		from news n
+		inner join o_agent oa on oa.id = n.agent_id  and oa.delete_flag = 1
+		inner join o_agent_domain oad on oad.agent_id = n.agent_id and oad.name = #{domain} 
+		where n.flag = 1
+		ORDER BY n.createtime desc 
+		<if test="pageSize>0 ">
+		 	limit ${offset},${pageSize}
+		</if>
+	</select>
+	
+	<select id="getNewsListCount" parameterType="string" resultType="long">
+		select count(1)
+		from news n
+		inner join o_agent oa on oa.id = n.agent_id  and oa.delete_flag = 1
+		inner join o_agent_domain oad on oad.agent_id = n.agent_id and oad.name = #{domain} 
+		where n.flag = 1
+	</select>
+	
+	<select id="getTop2News" resultType="HashMap">
+		select id,cre_user_id userId,createdate,title,
+       		   createby,createtime,lastrepair,lasttime
+		from news
+		where flag = 1
+		ORDER BY createtime desc 
+		limit 0,2
+	</select>
+</mapper>

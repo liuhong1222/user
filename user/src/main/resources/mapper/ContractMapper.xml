@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.ContractMapper">
+
+	<select id="getUserMaxContractNo" resultType="long" parameterType="String">
+		select count(1) contractNo from contract where cre_user_id = #{userId} and createDate = #{curDate} and flag = 1
+	</select>
+	
+	<select id="getContractPartyAInfoNull" resultType="HashMap">
+		select c.user_phone mobile,c.user_phone companyName,'' address
+		from cre_user c 
+		where c.id = #{userId} and c.delete_status = '0'
+	</select>
+	
+	<select  id="getContractPartyAInfo1" resultType="HashMap">
+		select c.user_phone mobile,ifnull(b.`name`,c.user_phone) companyName ,ifnull(b.address,'') address
+		from cre_user c 
+		left JOIN businesslicenceinfo b on b.cre_user_id = c.id and b.flag = 1
+		where c.id = #{userId} and c.delete_status = '0'
+	</select>
+	
+	<select  id="getContractPartyAInfo0" resultType="HashMap">
+		select c.user_phone mobile,ifnull(i.username,c.user_phone) companyName,ifnull(i.address,'') address
+		from cre_user c 
+		left JOIN idcardinfo i on i.cre_user_id = c.id and i.flag = 1
+		where c.id = #{userId} and c.delete_status = '0'
+	</select>
+	
+	<select id="getContractOrderList" resultType="HashMap" parameterType="HashMap">
+	    select * from (
+			select DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%S') paytime,order_no orderNo,
+	       			round(money/number,4) price,money,money paymoney
+			from trd_order 
+			where cre_user_id = #{userId}
+			and `status` = '1' and delete_status = '0'
+			union all 
+			select DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%S') paytime,order_no orderNo,
+	       			round(money/number,4) price,money,money paymoney
+			from trd_order 
+			where cre_user_id = #{userId}
+			and order_no =  #{orderNo} and delete_status = '0'
+		) a
+		ORDER BY a.paytime 
+	</select>
+	
+	<insert id="saveContractData" parameterType="cn.entity.Contract">
+	    insert into contract
+	         (cre_user_id,createDate,contractName,contractNo,orderNo,fileUrl,status,flag,createTime,createBy,lastRepair,lastTime)
+	    values
+	         (#{creUserId},#{createDate},#{contractName},#{contractNo},#{orderNo},#{fileUrl},#{status},#{flag},#{createTime},#{createBy},#{lastRepair},#{lastTime})
+	</insert>
+	
+	<update id="updateContractStatus" parameterType="HashMap">
+		update contract
+		set status = 1,lastRepair = #{userId} ,lastTime = now()
+		where cre_user_id =  #{userId} and orderNo = #{orderNo} and flag = 1		
+	</update>
+</mapper>

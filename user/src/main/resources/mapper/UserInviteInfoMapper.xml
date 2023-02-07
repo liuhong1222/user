@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.UserInviteInfoMapper">
+
+	<select id="getUserInviteInfoByCreUserId" resultType="main.java.cn.domain.UserInviteInfoDomain" parameterType="string">
+		SELECT id,cre_user_id creUserId,invite_count inviteCount,
+		       discount,flag,createtime,updatetime 
+		from user_invite_info 
+		where cre_user_id = #{creUserId} and flag = 1
+		limit 0,1
+	</select>
+	
+	<insert id="saveUserInviteInfo" parameterType="main.java.cn.domain.UserInviteInfoDomain">
+		INSERT INTO user_invite_info
+		  (cre_user_id,invite_count,discount,flag,createtime,updatetime)
+		values
+		  (#{creUserId},#{inviteCount},#{discount},#{flag},#{createtime},#{updatetime})
+	</insert>
+	
+	<update id="UpdateUserInviteInfo" parameterType="main.java.cn.domain.UserInviteInfoDomain">
+		update user_invite_info
+		set invite_count = #{inviteCount},discount = #{discount},updatetime = #{updatetime}
+		where id = #{id}
+	</update>
+</mapper>

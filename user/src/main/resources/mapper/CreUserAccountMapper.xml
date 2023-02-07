@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.CreUserAccountMapper">
+
+	<!-- 配置resultMap属性，进行表字段与实体类属性映射 -->  
+    <resultMap id="BaseResultMap" type="cn.entity.CreUserAccount" >  
+       <result column="id" property="id"></result>  
+       <result column="cre_user_id" property="creUserId"></result>  
+       <result column="account" property="account"></result> 
+       <result column="api_account" property="apiAccount"></result>
+	   <result column="rq_account" property="rqAccount"></result>
+	    <result column="tc_account" property="tcAccount"></result>
+	   <result column="fc_account" property="fcAccount"></result>
+	   <result column="ms_account" property="msAccount"></result>
+	   <result column="ct_account" property="ctAccount"></result>	   
+	   <result column="fi_account" property="fiAccount"></result>
+	   <result column="ff_account" property="ffAccount"></result>
+	   <result column="cl_account" property="clAccount"></result>
+	   <result column="idocr_account" property="idocrAccount"></result>
+	   <result column="blocr_account" property="blocrAccount"></result>
+	   <result column="bocr_account" property="bocrAccount"></result>
+	   <result column="docr_account" property="docrAccount"></result>	
+	   <result column="is_frozen" property="isFrozen"></result>	   
+       <result column="delete_status" property="deleteStatus"></result>
+       <result column="version" property="version"></result>  
+       <result column="create_time" property="createTime"></result>
+       <result column="update_time" property="updateTime"></result>  
+    </resultMap> 
+
+	<select id="getCreUserAccount" parameterType="HashMap" resultType="main.java.cn.domain.CreUserAccountDomain">
+		select c.user_phone mobile,ifnull(cu.account,0) account,ifnull(cu.api_account,0) apiAccount,
+		       ifnull(cu.rq_account,0) rqAccount,ifnull(cu.tc_account,0) tcAccount,
+		       ifnull(cu.fc_account,0) fcAccount,ifnull(cu.ms_account,0) msAccount,
+		        ifnull(cu.ct_account,0) ctAccount,ifnull(cu.fi_account,0) fiAccount,
+		       ifnull(cu.ff_account,0) ffAccount,ifnull(cu.cl_account,0) clAccount,
+		       ifnull(cu.idocr_account,0) idocrAccount,ifnull(cu.blocr_account,0) blocrAccount,
+		       ifnull(cu.bocr_account,0) bocrAccount,ifnull(cu.docr_account,0) docrAccount
+		from api_acount_info a 
+		INNER JOIN cre_user c on c.id = a.cre_user_id and c.delete_status = '0'
+		INNER JOIN cre_user_account cu on cu.cre_user_id = a.cre_user_id and cu.delete_status = '0'
+		where a.`name` = #{apiName} and a.`password` = #{password}
+		and a.delete_status = '0'
+		limit 0,1
+	</select>
+	
+	<select id="getCreUserApiConsumeCounts" resultType="HashMap" parameterType="HashMap">
+		SELECT SUBSTR(createDate,7,2) days, ${fieldName} account
+		FROM user_consumption 
+		<![CDATA[ WHERE cre_user_id = #{userId} AND createDate >= #{startDate}  AND createDate <= #{endDate} ]]>  
+	</select>
+	
+	<select id="findCreUserAccountByUserId" resultMap="BaseResultMap" parameterType="HashMap">
+		SELECT id,cre_user_id creUserId,ifnull(account,0) account,ifnull(api_account,0) apiAccount,ifnull(rq_account,0) rqAccount,
+		       ifnull(tc_account,0) tcAccount,ifnull(fc_account,0) fcAccount,ifnull(ct_account,0) ctAccount,ifnull(ms_account,0) msAccount,		       
+		       ifnull(fi_account,0) fiAccount,ifnull(ff_account,0) ffAccount,ifnull(cl_account,0) clAccount,
+		       ifnull(idocr_account,0) idocrAccount,ifnull(blocr_account,0) blocrAccount,ifnull(bocr_account,0) bocrAccount,
+		       ifnull(docr_account,0) docrAccount,	is_frozen isFrozen,	       
+		       delete_status deleteStatus,version,create_time createTime,update_time updateTime
+		FROM cre_user_account 
+		WHERE CRE_USER_ID = #{creUserId} AND DELETE_STATUS = '0'
+	</select>
+
+	<update id="updateCreUserAccount" parameterType="cn.entity.CreUserAccount">
+		UPDATE cre_user_account
+		<trim prefix="set" suffixOverrides=",">
+			<if test="creUserId != null">
+				CRE_USER_ID = #{creUserId},
+			</if>
+			<if test="account != null">
+				ACCOUNT = #{account},
+			</if>
+			<if test="apiAccount != null">
+				API_ACCOUNT = #{apiAccount},
+			</if>
+			<if test="rqAccount != null">
+				RQ_ACCOUNT = #{rqAccount},
+			</if>
+			<if test="tcAccount != null">
+				tc_account = #{tcAccount},
+			</if>
+			<if test="fcAccount != null">
+				fc_account = #{fcAccount},
+			</if>
+			<if test="msAccount != null">
+				ms_account = #{msAccount},
+			</if>
+			<if test="ctAccount != null">
+				ct_account = #{ctAccount},
+			</if>			
+			<if test="fiAccount != null">
+				fi_account = #{fiAccount},
+			</if>
+			<if test="ffAccount != null">
+				ff_account = #{ffAccount},
+			</if>
+			<if test="clAccount != null">
+				cl_account = #{clAccount},
+			</if>
+			<if test="idocrAccount != null">
+				idocr_account = #{idocrAccount},
+			</if>
+			<if test="blocrAccount != null">
+				blocr_account = #{blocrAccount},
+			</if>
+			<if test="bocrAccount != null">
+				bocr_account = #{bocrAccount},
+			</if>
+			<if test="docrAccount != null">
+				docr_account = #{docrAccount},
+			</if>			
+			<if test="deleteStatus != null">
+				DELETE_STATUS = #{deleteStatus},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime},
+			</if>
+			version = version + 1
+		</trim>
+		WHERE ID=#{id} and VERSION = #{version}
+	</update>
+	
+	<update id="updateApiAccount" parameterType="cn.entity.CreUserAccount">
+		UPDATE cre_user_account
+		set api_account = api_account - #{apiAccount},UPDATE_TIME = now()
+		where ID=#{id} and VERSION = #{version}
+	</update>
+
+	<insert id="saveCreUserAccount" parameterType="cn.entity.CreUserAccount">
+		INSERT INTO cre_user_account(
+		CRE_USER_ID,
+		ACCOUNT,
+		API_ACCOUNT,
+		RQ_ACCOUNT,
+		tc_account,
+		fc_account,
+		ms_account,
+		ct_account,		
+		fi_account,
+		ff_account,
+		cl_account,
+		idocr_account,
+		blocr_account,
+		bocr_account,
+		docr_account,		
+		DELETE_STATUS,
+		VERSION,
+		CREATE_TIME,
+		UPDATE_TIME)
+		VALUES (
+		#{creUserId},
+		#{account},
+		#{apiAccount},
+		#{rqAccount},
+		5,
+		5,
+		5,
+		5,
+		5,
+		5,
+		5,
+		5,
+		5,
+		5,
+		5,
+		'0',
+		0,
+		#{createTime},
+		#{updateTime}
+		)
+	</insert>
+
+	<update id="addByUserId" parameterType="cn.entity.CreUserAccount">
+		UPDATE cre_user_account
+		<trim prefix="set" suffixOverrides=",">
+			<if test="account != null  and account!=''"> account =account + #{account}, </if>
+			<if test="apiAccount != null and apiAccount!=''"> api_account =api_account + #{apiAccount}, </if>
+			<if test="rqAccount != null and rqAccount!=''"> rq_account =rq_account + #{rqAccount}, </if>
+			<if test="updateTime != null"> update_time = #{updateTime}, </if>
+		    <if test="tcAccount != null"> tc_account =tc_account + #{tcAccount},</if> 
+		    <if test="fcAccount != null"> fc_account =fc_account + #{fcAccount},</if> 
+		    <if test="msAccount != null"> ms_account =ms_account + #{msAccount},</if>
+			version =version+1,
+		</trim>
+		WHERE cre_user_id=#{creUserId}
+		and delete_status='0'
+	</update>
+
+
+	<update id="subByUserId" parameterType="HashMap">
+		UPDATE cre_user_account
+		<trim prefix="set" suffixOverrides=",">
+			<if test="account != null and account!=''"> account =account - #{account}, </if>
+			<if test="apiAccount != null and apiAccount!=''"> api_account =api_account - #{apiAccount}, </if>
+			<if test="rqAccount != null and rqAccount!=''"> rq_account =rq_account - #{rqAccount}, </if>
+			<if test="tcAccount != null"> tc_account =tc_account - #{tcAccount},</if> 
+			<if test="fcAccount != null"> fc_account =fc_account - #{fcAccount},</if> 
+			<if test="msAccount != null"> ms_account =ms_account - #{msAccount},</if> 
+			<if test="updateTime != null"> update_time = #{updateTime}, </if>
+			version =version+1,
+		</trim>
+		WHERE cre_user_id=#{creUserId}
+		and delete_status='0'
+	</update>
+
+</mapper>

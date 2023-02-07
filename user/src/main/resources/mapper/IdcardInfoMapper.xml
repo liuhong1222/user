@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.IdcardInfoMapper">
+
+	<select id="getIdcardInfoByCreUserId" resultType="HashMap">
+		SELECT * FROM idcardinfo WHERE cre_user_id = #{creUserId} AND flag = 1 limit 0,1
+	</select>
+
+	<select id="getUserAuthInfo"  resultType="HashMap" parameterType="HashMap">
+		select b.username,b.idno,b.address,b.effectDate,b.expireDate
+		from idcardinfo b 
+		INNER JOIN cre_user c on c.id = b.cre_user_id and c.user_type = #{userType} and c.is_auth = '3' and c.delete_status = '0'
+		where b.cre_user_id = #{userId} and b.flag = 1
+		limit 0,1
+	</select>
+	
+	<update id="updateIdcardInfo" parameterType="HashMap">
+		UPDATE idcardinfo
+		<trim prefix="set" suffixOverrides=",">
+			<if test="username != null">
+				username = #{username},
+			</if>
+			<if test="sex != null">
+				sex = #{sex},
+			</if>
+			<if test="nation != null">
+				nation = #{nation},
+			</if>
+			<if test="birthday != null">
+				birthday = #{birthday},
+			</if>
+			<if test="address != null">
+				address = #{address},
+			</if>
+			<if test="idno != null">
+				idno = #{idno},
+			</if>
+			<if test="signer != null">
+				signer = #{signer},
+			</if>
+			<if test="effectDate != null">
+				effectDate = #{effectDate},
+			</if>
+			<if test="expireDate != null">
+				expireDate = #{expireDate},
+			</if>
+			<if test="faceUrl != null">
+				face_url = #{faceUrl},
+			</if>
+			<if test="backUrl != null">
+				back_url = #{backUrl},
+			</if>			
+			lastTime = now(),lastRepair = #{cre_user_id}
+		</trim>
+		WHERE cre_user_id=#{cre_user_id} and flag = 1
+	</update>
+	
+	<update id="updateIdcardInfoByDomain" parameterType="main.java.cn.domain.IdCardInfoDomain">
+		UPDATE idcardinfo
+		<trim prefix="set" suffixOverrides=",">
+			<if test="username != null">
+				username = #{username},
+			</if>
+			<if test="address != null">
+				address = #{address},
+			</if>
+			<if test="idno != null">
+				idno = #{idno},
+			</if>
+			<if test="effectDate != null">
+				effectDate = #{effectDate},
+			</if>
+			<if test="expireDate != null">
+				expireDate = #{expireDate},
+			</if>		
+			lastTime = now(),lastRepair = #{creUserId}
+		</trim>
+		WHERE cre_user_id=#{creUserId} and flag = 1
+	</update>
+
+	<insert id="saveIdcardInfo" parameterType="HashMap">
+		INSERT INTO idcardinfo
+			(cre_user_id,username,sex,nation,birthday,address,idno,signer,effectDate,
+			   expireDate,face_url,back_url,flag,createTime,createBy,lastTime,lastRepair)
+		VALUES 
+			(#{cre_user_id},#{username},#{sex},#{nation},#{birthday},#{address},#{idno},#{signer},
+			   #{effectDate},#{expireDate},#{faceUrl},#{backUrl},1,now(),#{cre_user_id},now(),#{cre_user_id})
+	</insert>
+	
+	<select id="getUserAuthCount" parameterType="string" resultType="long">
+		select count(1) 
+		from idcardinfo i
+		inner join cre_user c on c.auth_id = i.id and c.delete_status = '0'
+		where i.idno = #{idno}
+	</select>
+</mapper>

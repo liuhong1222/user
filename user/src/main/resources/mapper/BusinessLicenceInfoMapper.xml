@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.BusinessLicenceInfoMapper">
+
+	<select id="getBusinessLicenceInfoByCreUserId" resultType="HashMap">
+		SELECT * FROM businesslicenceinfo WHERE cre_user_id = #{creUserId} AND flag = 1 limit 0,1
+	</select>
+
+	<select id="getUserAuthInfo"  resultType="HashMap" parameterType="HashMap">
+		select b.`name`,b.regnum,b.address,b.person, b.effectDate,b.expireDate,b.business
+		from businesslicenceinfo b 
+		INNER JOIN cre_user c on c.id = b.cre_user_id and c.user_type = #{userType} and c.is_auth = '3' and c.delete_status = '0'
+		where b.cre_user_id = #{userId} and b.flag = 1
+		limit 0,1
+	</select>
+	
+	<update id="updateBusinessLicenceInfo" parameterType="HashMap">
+		UPDATE businesslicenceinfo
+		<trim prefix="set" suffixOverrides=",">
+			<if test="regnum != null">
+				regnum = #{regnum},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="person != null">
+				person = #{person},
+			</if>
+			<if test="effectDate != null">
+				effectDate = #{effectDate},
+			</if>
+			<if test="expireDate != null">
+				expireDate = #{expireDate},
+			</if>
+			<if test="address != null">
+				address = #{address},
+			</if>
+			<if test="captial != null">
+				captial = #{captial},
+			</if>
+			<if test="business != null">
+				business = #{business},
+			</if>
+			<if test="elbem != null">
+				elbem = #{elbem},
+			</if>
+			<if test="title != null">
+				title = #{title},
+			</if>
+			<if test="stamp != null">
+				stamp = #{stamp},
+			</if>
+			<if test="qrcode != null">
+				qrcode = #{qrcode},
+			</if>
+			<if test="picture_url != null">
+				picture_url = #{picture_url},
+			</if>
+			lastTime = now(),lastRepair = #{cre_user_id}
+		</trim>
+		WHERE cre_user_id=#{cre_user_id} and flag = 1
+	</update>
+	
+	<update id="updateBusinessInfoByDomain" parameterType="main.java.cn.domain.BusinessInfoDomain">
+		UPDATE businesslicenceinfo
+		<trim prefix="set" suffixOverrides=",">
+			<if test="regnum != null">
+				regnum = #{regnum},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="person != null">
+				person = #{person},
+			</if>
+			<if test="effectDate != null">
+				effectDate = #{effectDate},
+			</if>
+			<if test="expireDate != null">
+				expireDate = #{expireDate},
+			</if>
+			<if test="address != null">
+				address = #{address},
+			</if>
+			<if test="business != null">
+				business = #{business},
+			</if>
+			lastTime = now(),lastRepair = #{creUserId}
+		</trim>
+		WHERE cre_user_id=#{creUserId} and flag = 1
+	</update>
+
+	<insert id="saveBusinessLicenceInfo" parameterType="HashMap">
+		INSERT INTO businesslicenceinfo
+		  (cre_user_id,regnum,name,person,effectDate,expireDate,address,captial,business,
+		   elbem,title,stamp,qrcode,picture_url,flag,createTime,createBy,lastTime,lastRepair)
+		values
+		  (#{cre_user_id},#{regnum},#{name},#{person},#{effectDate},#{expireDate},#{address},
+		  #{captial},#{business},#{elbem},#{title},#{stamp},#{qrcode},#{picture_url},1,now(),#{cre_user_id},now(),#{cre_user_id})
+		
+	</insert>
+	
+	<select id="getUserAuthCount" parameterType="string" resultType="long">
+		select count(1) 
+		from businesslicenceinfo b
+		inner join cre_user c on c.auth_id = b.id and c.delete_status = '0'
+		where b.regnum = #{regnum} 
+	</select>
+</mapper>

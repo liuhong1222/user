@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dao.ApiAccountInfoMapper">
+
+	<!-- 配置resultMap属性，进行表字段与实体类属性映射 -->  
+    <resultMap id="BaseResultMap" type="cn.entity.ApiAccountInfo" >  
+       <result column="id" property="id"></result>  
+       <result column="cre_user_id" property="creUserId"></result>  
+       <result column="name" property="name"></result> 
+       <result column="password" property="password"></result>
+       <result column="num_reminding" property="numReminding"></result>
+       <result column="bd_ip" property="bdIp"></result>
+       <result column="push_mobiles" property="pushMobiles"></result>
+       <result column="result_pwd" property="resultPwd"></result>
+       <result column="delete_status" property="deleteStatus"></result>
+       <result column="version" property="version"></result>  
+       <result column="create_time" property="createTime"></result>
+       <result column="update_time" property="updateTime"></result>  
+    </resultMap> 
+    
+	<select id="findByCreUserIdAndName" resultMap="BaseResultMap" parameterType="HashMap">
+		SELECT * FROM api_acount_info WHERE CRE_USER_ID = #{0} AND DELETE_STATUS = '0'
+	</select>
+	
+	<select id="findByNameAndPwd" resultMap="BaseResultMap" parameterType="HashMap">
+		SELECT * FROM api_acount_info WHERE NAME = #{0} AND PASSWORD = #{1} AND DELETE_STATUS = '0'
+	</select>
+	
+	<select id="findByCreUserId" resultMap="BaseResultMap" parameterType="HashMap">
+		SELECT * FROM api_acount_info WHERE CRE_USER_ID = #{creUserId} AND DELETE_STATUS = '0'
+	</select>
+
+	<update id="update" parameterType="cn.entity.ApiAccountInfo">
+		UPDATE api_acount_info
+		<trim prefix="set" suffixOverrides=",">
+			<if test="creUserId != null">
+				CRE_USER_ID = #{creUserId},
+			</if>
+			<if test="name != null">
+				NAME = #{name},
+			</if>
+			<if test="password != null">
+				PASSWORD = #{password},
+			</if>
+			<if test="numReminding != null">
+				NUM_REMINDING = #{numReminding},
+			</if>
+			<if test="bdIp != null">
+				BD_IP = #{bdIp},
+			</if>
+			<if test="pushMobiles != null">
+				PUSH_MOBILES = #{pushMobiles},
+			</if>
+			<if test="resultPwd != null">
+				result_pwd = #{resultPwd},
+			</if>
+			<if test="deleteStatus != null">
+				DELETE_STATUS = #{deleteStatus},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime},
+			</if>
+			version = version + 1
+		</trim>
+		WHERE ID=#{id}
+	</update>
+	
+	<update id="updateDomain" parameterType="main.java.cn.domain.ApiAccountInfoDomain">
+		UPDATE api_acount_info
+		<trim prefix="set" suffixOverrides=",">
+			<if test="creUserId != null">
+				CRE_USER_ID = #{creUserId},
+			</if>
+			<if test="name != null">
+				NAME = #{name},
+			</if>
+			<if test="password != null">
+				PASSWORD = #{password},
+			</if>
+			<if test="numReminding != null">
+				NUM_REMINDING = #{numReminding},
+			</if>
+			<if test="bdIp != null">
+				BD_IP = #{bdIp},
+			</if>
+			<if test="pushMobiles != null">
+				PUSH_MOBILES = #{pushMobiles},
+			</if>
+			<if test="resultPwd != null">
+				result_pwd = #{resultPwd},
+			</if>
+			<if test="deleteStatus != null">
+				DELETE_STATUS = #{deleteStatus},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime},
+			</if>
+			version = version + 1
+		</trim>
+		WHERE ID=#{id} and VERSION = #{version}
+	</update>
+	
+	 <insert id ="save" parameterType="cn.entity.ApiAccountInfo" >
+		INSERT INTO api_acount_info(
+			CRE_USER_ID,
+			NAME,
+			PASSWORD,
+			NUM_REMINDING,
+			BD_IP,
+			PUSH_MOBILES,
+			result_pwd,
+			DELETE_STATUS,
+			VERSION,
+			CREATE_TIME,
+			UPDATE_TIME)
+		VALUES (
+			#{creUserId},
+			#{name},
+			#{password},
+			#{numReminding},
+			#{bdIp},
+			#{pushMobiles},
+			#{resultPwd},
+			0,
+			0,
+			#{createTime},
+			#{updateTime}
+		)
+	 </insert>
+
+	<select id="getAccountInfo" resultType="main.java.cn.domain.AccountInfoDomain">
+		select aa.id,aa.cre_user_id creUserId,ifnull(aa.num_reminding,0) numReminding,
+		       aa.bd_ip bdIp,aa.push_mobiles pushMobiles,ifnull(cua.tc_account,0) tcAccount,
+		       ifnull(cua.fc_account,0) fcAccount,ifnull(cua.ms_account,0) msAccount,
+		       ifnull(cua.ct_account,0) ctAccount,ifnull(cua.fi_account,0) fiAccount,
+		       ifnull(cua.ff_account,0) ffAccount,ifnull(cua.cl_account,0) clAccount,
+		       ifnull(cua.idocr_account,0) idocrAccount,ifnull(cua.blocr_account,0) blocrAccount,
+		       ifnull(cua.bocr_account,0) bocrAccount,ifnull(cua.docr_account,0) docrAccount,
+		       cua.version
+		from api_acount_info aa
+		INNER JOIN cre_user_account cua on cua.cre_user_id = aa.cre_user_id and cua.delete_status = '0'
+		where aa.`name` = #{0} and aa.`password` = #{1}
+		and aa.delete_status = '0'
+		limit 0,1
+	</select>
+	
+	<select id="findByAppId" resultMap="BaseResultMap" >
+		SELECT * FROM api_acount_info WHERE `name` = #{appId} AND DELETE_STATUS = '0' limit 0,1
+	</select>
+	
+	<update id="updateTcAccount" parameterType="HashMap">
+		UPDATE cre_user_account
+		set tc_account = tc_account -  #{checkCount},version = version + 1,update_time = now()
+		where cre_user_id = #{creUserId} and delete_status = '0' and version = #{version}
+	</update>
+	
+	<update id="updateFcAccount" parameterType="HashMap">
+		UPDATE cre_user_account
+		set fc_account = fc_account - #{checkCount},version = version + 1,update_time = now()
+		where cre_user_id = #{creUserId} and delete_status = '0' and version = #{version}
+	</update>
+	
+	<update id="updateMsAccount" parameterType="HashMap">
+		UPDATE cre_user_account
+		set ms_account = ms_account - #{checkCount},version = version + 1,update_time = now()
+		where cre_user_id = #{creUserId} and delete_status = '0' and version = #{version}
+	</update>
+	
+	<select id="getResultPwd" parameterType="string" resultType="string">
+		select result_pwd resultPwd from api_acount_info where cre_user_id = #{creUserId} and DELETE_STATUS = '0'
+	</select>
+</mapper>
