@@ -394,13 +394,7 @@ public class CreUserServiceImpl implements CreUserService {
 				result.setResultObj(creUserDomains);
 				return result;
 			} else {
-				// 不存在重新注册
-				if (StringUtils.isNotBlank(domain) && !"khjc.com.cn,0904.cn".contains(domain)) {
-					result = handleCodeRegister(param,domain);
-				}else {
-					result.setResultCode(ResultCode.RESULT_FAILED);
-					result.setResultMsg("抱歉，暂不支持新客户注册");
-				}
+				result = handleCodeRegister(param,domain);
 			}
 			
 		} catch (Exception e) {
